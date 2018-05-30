@@ -14,11 +14,11 @@
 #         Author:  zt ()
 #   Organization:
 
+from itertools import cycle
 import random
 import sys
-import pygame
 
-from itertools import cycle
+import pygame
 from pygame.locals import *
 
 FPS = 30
@@ -30,17 +30,25 @@ BASEY = SCREENHEIGHT * 0.79
 
 (IMAGES, HITMASKS) = ({ }, { })
 
-PLAYERS_LIST = (('pic/redbird-upflap.png', 'pic/redbird-midflap.png'
-                 , 'pic/redbird-downflap.png'),
-                ('pic/bluebird-upflap.png',
-                 'pic/bluebird-midflap.png',
-                 'pic/bluebird-downflap.png'),
-                ('pic/yellowbird-upflap.png',
-                 'pic/yellowbird-midflap.png',
-                 'pic/yellowbird-downflap.png'))
+PLAYERS_LIST = (
+    (
+        'pic/redbird-upflap.png',
+        'pic/redbird-midflap.png',
+        'pic/redbird-downflap.png'
+    ),
+    (
+        'pic/bluebird-upflap.png',
+        'pic/bluebird-midflap.png',
+        'pic/bluebird-downflap.png'
+    ),
+    (
+        'pic/yellowbird-upflap.png',
+        'pic/yellowbird-midflap.png',
+        'pic/yellowbird-downflap.png'
+    )
+)
 
-BACKGROUNDS_LIST = ('pic/background-day.png',
-                    'pic/background-night.png')
+BACKGROUNDS_LIST = ('pic/background-day.png', 'pic/background-night.png')
 
 PIPES_LIST = ('pic/pipe-green.png', 'pic/pipe-red.png')
 
@@ -71,38 +79,44 @@ def main( ):
         pygame.image.load( 'pic/9.png' ).convert_alpha( ),
     )
 
-    IMAGES['gameover'] = pygame.image.load( 'pic/gameover.png'
-                                            ).convert_alpha( )
-    IMAGES['message'] = pygame.image.load( 'pic/message.png'
-                                           ).convert_alpha( )
+    IMAGES['gameover'] = pygame.image.load( 'pic/gameover.png' ).convert_alpha( )
+    IMAGES['message'] = pygame.image.load( 'pic/message.png' ).convert_alpha( )
     IMAGES['base'] = pygame.image.load( 'pic/base.png' ).convert_alpha( )
 
     while True:
         randBg = random.randint( 0, len( BACKGROUNDS_LIST ) - 1 )
-        IMAGES['background'] = \
-            pygame.image.load( BACKGROUNDS_LIST[randBg] ).convert( )
+        IMAGES['background'] = pygame.image.load( BACKGROUNDS_LIST[randBg] ).convert( )
 
         randPlayer = random.randint( 0, len( PLAYERS_LIST ) - 1 )
-        IMAGES['player'] = \
-            (pygame.image.load( PLAYERS_LIST[randPlayer][0] ).convert_alpha( ),
-             pygame.image.load( PLAYERS_LIST[randPlayer][1] ).convert_alpha( ),
-             pygame.image.load( PLAYERS_LIST[randPlayer][2] ).convert_alpha( ))
+
+        IMAGES['player'] = (
+            pygame.image.load( PLAYERS_LIST[randPlayer][0] ).convert_alpha( ),
+            pygame.image.load( PLAYERS_LIST[randPlayer][1] ).convert_alpha( ),
+            pygame.image.load( PLAYERS_LIST[randPlayer][2] ).convert_alpha( )
+        )
 
         pipeindex = random.randint( 0, len( PIPES_LIST ) - 1 )
-        IMAGES['pipe'] = \
-            (pygame.transform.rotate( pygame.image.load( PIPES_LIST[pipeindex] ).convert_alpha( ),
-                                      180 ),
-             pygame.image.load( PIPES_LIST[pipeindex] ).convert_alpha( ))
 
-        HITMASKS['pipe'] = (getHitmask( IMAGES['pipe'][0] ),
-                            getHitmask( IMAGES['pipe'][1] ))
+        IMAGES['pipe'] = (
+            pygame.transform.rotate( pygame.image.load( PIPES_LIST[pipeindex] ).convert_alpha( ), 180 ),
+            pygame.image.load( PIPES_LIST[pipeindex] ).convert_alpha( )
+        )
 
-        HITMASKS['player'] = (getHitmask( IMAGES['player'][0] ),
-                              getHitmask( IMAGES['player'][1] ),
-                              getHitmask( IMAGES['player'][2] ))
+        HITMASKS['pipe'] = (
+            getHitmask( IMAGES['pipe'][0] ),
+            getHitmask( IMAGES['pipe'][1] )
+        )
+
+        HITMASKS['player'] = (
+            getHitmask( IMAGES['player'][0] ),
+            getHitmask( IMAGES['player'][1] ),
+            getHitmask( IMAGES['player'][2] )
+        )
 
         movementInfo = showWelcomeAnimation( )
+
         crashInfo = mainGame( movementInfo )
+
         showGameOverScreen( crashInfo )
 
 
@@ -118,41 +132,45 @@ def showWelcomeAnimation( ):
     messagey = int( SCREENHEIGHT * 0.12 )
 
     basex = 0
+    baseShift = IMAGES['base'].get_width( ) - IMAGES['background'].get_width( )
     playerShmVals = { 'val': 0, 'dir': 1 }
 
     while True:
         for event in pygame.event.get( ):
-            if event.type == QUIT or event.type == KEYDOWN \
-                    and event.key == K_ESCAPE:
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit( )
                 sys.exit( )
-            if event.type == KEYDOWN and (event.key == K_SPACE
-                                          or event.key == K_UP):
-                return { 'playery': playery + playerShmVals['val'],
-                         'basex': basex, 'plyerIndexGen': playerIndexGen }
-    if (loopIter + 1) % 5 == 0:
-        playerIndex = next( playerIndexGen )
+            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+                return {
+                    'playery': playery + playerShmVals['val'],
+                    'basex': basex,
+                    'plyerIndexGen': playerIndexGen
+                }
 
-    loopIter = (loopIter + 1) % 30
-    basex = -((-basex + 4) % baseShift)
+        if (loopIter + 1) % 5 == 0:
+            playerIndex = next( playerIndexGen )
 
-    playerShm( playerShmVals )
+        loopIter = (loopIter + 1) % 30
+        basex = -((-basex + 4) % baseShift)
 
-    SCREEN.blit( IMAGES['background'], (0, 0) )
-    SCREEN.blit( IMAGES['player'][playerIndex], (playerx, playery
-                                                 + playerShmVals['val']) )
+        playerShm( playerShmVals )
 
-    SCREEN.blit( IMAGES['message'], (messagex, messagey) )
-    SCREEN.blit( IMAGES['base'], (basex, BASEY) )
+        SCREEN.blit( IMAGES['background'], (0, 0) )
+        SCREEN.blit( IMAGES['player'][playerIndex],
+                     (playerx, playery + playerShmVals['val']) )
 
-    pygame.display.update( )
-    FPSCLOCK.tick( FPS )
+        SCREEN.blit( IMAGES['message'], (messagex, messagey) )
+        SCREEN.blit( IMAGES['base'], (basex, BASEY) )
+
+        pygame.display.update( )
+        FPSCLOCK.tick( FPS )
 
 
 def mainGame( movementInfo ):
     score = playerIndex = loopIter = 0
     playerIndexGen = movementInfo['playerIndexGen']
-    playerx, playery = int( SCREENWIDTH * 0.2 ), movementInfo['playery']
+
+    (playerx, playery) = (int( SCREENWIDTH * 0.2 ), movementInfo['playery'])
 
     basex = movementInfo['basex']
     baseShift = IMAGES['base'].get_width( ) - IMAGES['background'].getwitdh( )
@@ -162,22 +180,22 @@ def mainGame( movementInfo ):
 
     upperPipes = [
         { 'x': SCREENWIDTH + 200, 'y': newPipe1[0]['y'] },
-        { 'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y'] },
+        { 'x': SCREENWIDTH + 200 + SCREENWIDTH / 2, 'y': newPipe2[0]['y'] }
     ]
 
     lowerPipes = [
         { 'x': SCREENWIDTH + 200, 'y': newPipe1[1]['y'] },
-        { 'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[1]['y'] },
+        { 'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[1]['y'] }
     ]
 
-    pipeVelx = -4
+    pipeVelX = -4
 
     playerVelY = -9
     playerMaxVelY = 10
     playerMinVelY = -8
     playerAccY = 1
     playerRot = 45
-    playerVerRot = 3
+    playerVelRot = 3
     playerRotThr = 20
     playerFlapAcc = -9
     playerFlapped = False
@@ -192,8 +210,11 @@ def mainGame( movementInfo ):
                     playerVelY = playerFlapAcc
                     playerFlapped = True
 
-        crashTest = checkCrash( { 'x': playerx, 'y': playery, 'index': playerIndex },
-                                upperPipes, lowerPipes )
+        crashTest = checkCrash(
+            { 'x': playerx, 'y': playery, 'index': playerIndex },
+            upperPipes,
+            lowerPipes
+        )
 
         if crashTest[0]:
             return {
@@ -204,8 +225,14 @@ def mainGame( movementInfo ):
                 'lowerPipes': lowerPipes,
                 'score': score,
                 'playerVelY': playerVelY,
-                'playerRot': playerRot
+                'playerRot': playerRot,
             }
+
+        playerMidPos = playerx + IMAGES['player'][0].get_width( ) / 2
+        for pipe in upperPipes:
+            pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width( ) / 2
+            if pipeMidPos <= playerMidPos < pipeMidPos + 4:
+                score += 1
 
         if (loopIter + 1) % 3 == 0:
             playerIndex = next( playerIndexGen )
@@ -227,7 +254,7 @@ def mainGame( movementInfo ):
         playerHeight = IMAGES['player'][playerIndex].get_height( )
         playery += min( playerVelY, BASEY - playery - playerHeight )
 
-        for uPipe, lPipe in zip( upperPipes, lowerPipes ):
+        for (uPipe, lPipe) in zip( upperPipes, lowerPipes ):
             uPipe['x'] += pipeVelX
             lPipe['x'] += pipeVelX
 
@@ -241,6 +268,13 @@ def mainGame( movementInfo ):
             lowerPipes.pop( 0 )
 
         SCREEN.blit( IMAGES['background'], (0, 0) )
+
+        for (uPipe, lPipe) in zip( upperPipes, lowerPipes ):
+            SCREEN.blit( IMAGES['pipe'][0], (uPipe['x'], uPipe['y']) )
+            SCREEN.blit( IMAGES['pipe'][1], (lPipe['x'], lPipe['y']) )
+
+        SCREEN.blit( IMAGES['base'], (basex, BASEY) )
+
         showScore( score )
 
         visibleRot = playerRotThr
@@ -266,7 +300,8 @@ def showGameOverScreen( crashInfo ):
 
     basex = crashInfo['basex']
 
-    upperPipes, lowerPipes = crashInfo['upperPipes'], crashInfo['lowerPipes']
+    (upperPipes, lowerPipes) = (crashInfo['upperPipes'],
+                                crashInfo['lowerPipes'])
 
     while True:
         for event in pygame.event.get( ):
@@ -274,7 +309,8 @@ def showGameOverScreen( crashInfo ):
                 pygame.quit( )
                 sys.exit( )
 
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+            if event.type == KEYDOWN and (event.key == K_SPACE
+                                          or event.key == K_UP):
                 if playery + playerHeight >= BASEY - 1:
                     return
 
@@ -290,9 +326,9 @@ def showGameOverScreen( crashInfo ):
 
         SCREEN.blit( IMAGES['background'], (0, 0) )
 
-        for uPipe, lPipe in zip( upperPipes, lowerPipes ):
+        for (uPipe, lPipe) in zip( upperPipes, lowerPipes ):
             SCREEN.blit( IMAGES['pipe'][0], (uPipe['x'], uPipe['y']) )
-            SCREEN.blit( IMAGES['pipe'][1], (uPipe['x'], uPipe['y']) )
+            SCREEN.blit( IMAGES['pipe'][1], (lPipe['x'], lPipe['y']) )
 
         SCREEN.blit( IMAGES['base'], (basex, BASEY) )
         showScore( score )
@@ -332,6 +368,7 @@ def showScore( score ):
 
     for digit in scoreDigits:
         totalWidth += IMAGES['numers'][digit].get_width( )
+
     Xoffset = (SCREENWIDTH - totalWidth) / 2
 
     for digit in scoreDigits:
@@ -347,21 +384,25 @@ def checkCrash( player, upperPipes, lowerPipes ):
     if player['y'] + player['h'] >= BASEY - 1:
         return [True, True]
     else:
-        playerRect = pygame.Rect( player['x'], player['y'],
-                                  player['w'], player['h'] )
+        playerRect = pygame.Rect( player['x'], player['y'], player['w'],
+                                  player['h'] )
         pipeW = IMAGES['pipe'][0].get_width( )
         pipeH = IMAGES['pipe'][0].get_height( )
 
-        for uPipe, lPipe in zip( upperPipes, lowerPipes ):
-            uPipeRect = pygame.Rect( uPipe['x'], uPipe['y'], pipeW, pipeH )
-            lPipeRect = pygame.Rect( lPipe['x'], lPipe['y'], pipeW, pipeH )
+        for (uPipe, lPipe) in zip( upperPipes, lowerPipes ):
+            uPipeRect = pygame.Rect( uPipe['x'], uPipe['y'], pipeW,
+                                     pipeH )
+            lPipeRect = pygame.Rect( lPipe['x'], lPipe['y'], pipeW,
+                                     pipeH )
 
             pHitMask = HITMASKS['player'][pi]
             uHitmask = HITMASKS['pipe'][0]
             lHitmask = HITMASKS['pipe'][1]
 
-            uCollide = pixelCollision( playerRect, uPipeRect, pHitMask, uHitmask )
-            lCollide = pixelCollision( playerRect, lPipeRect, pHitMask, lHitmask )
+            uCollide = pixelCollision( playerRect, uPipeRect, pHitMask,
+                                       uHitmask )
+            lCollide = pixelCollision( playerRect, lPipeRect, pHitMask,
+                                       lHitmask )
 
             if uCollide or lCollide:
                 return [True, False]
@@ -375,7 +416,7 @@ def pixelCollision( rect1, rect2, hitmask1, hitmask2 ):
     if rect.width == 0 or rect.height == 0:
         return False
 
-    x1, y1 = rect.x - rect.x, rect.y - rect1.y
+    x1, y1 = rect.x - rect1.x, rect.y - rect1.y
     x2, y2 = rect.x - rect2.x, rect.y - rect2.y
 
     for x in xrange( rect.width ):
