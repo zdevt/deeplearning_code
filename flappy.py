@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #       FileName:  flappy.py
@@ -7,7 +7,7 @@
 #
 #        Version:  1.0
 #        Created:  2018-05-28 15:01:41
-#  Last Modified:  2018-05-30 16:49:44
+#  Last Modified:  2018-06-05 13:40:36
 #       Revision:  none
 #       Compiler:  gcc
 #
@@ -20,6 +20,9 @@ import sys
 
 import pygame
 from pygame.locals import *
+import pdb
+
+#pdb.set_trace()
 
 FPS = 30
 SCREENWIDTH = 288
@@ -33,9 +36,9 @@ BASEY = SCREENHEIGHT * 0.79
 PLAYERS_LIST = (('pic/redbird-upflap.png', 'pic/redbird-midflap.png',
                  'pic/redbird-downflap.png'),
                 ('pic/bluebird-upflap.png', 'pic/bluebird-midflap.png',
-                 'pic/bluebird-downflap.png'),
-                ('pic/yellowbird-upflap.png','pic/yellowbird-midflap.png',
-                 'pic/yellowbird-downflap.png'))
+                 'pic/bluebird-downflap.png'), ('pic/yellowbird-upflap.png',
+                                                'pic/yellowbird-midflap.png',
+                                                'pic/yellowbird-downflap.png'))
 
 BACKGROUNDS_LIST = ('pic/background-day.png', 'pic/background-night.png')
 
@@ -122,8 +125,8 @@ def showWelcomeAnimation():
 
     while True:
         for event in pygame.event.get():
-            if event.type == QUIT or event.type == KEYDOWN \
-                and event.key == K_ESCAPE:
+            if event.type == QUIT or (event.type == KEYDOWN
+                                      and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN and (event.key == K_SPACE
@@ -195,8 +198,8 @@ def mainGame(movementInfo):
 
     while True:
         for event in pygame.event.get():
-            if event.type == QUIT or event.type == KEYDOWN \
-                and event.key == K_ESCAPE:
+            if event.type == QUIT or (event.type == KEYDOWN
+                                      and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN and (event.key == K_SPACE
@@ -301,8 +304,8 @@ def showGameOverScreen(crashInfo):
 
     while True:
         for event in pygame.event.get():
-            if event.type == QUIT or event.type == KEYDOWN \
-                and event.key == K_ESCAPE:
+            if event.type == QUIT or (event.type == KEYDOWN
+                                      and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
 
@@ -408,12 +411,7 @@ def checkCrash(player, upperPipes, lowerPipes):
     return [False, False]
 
 
-def pixelCollision(
-        rect1,
-        rect2,
-        hitmask1,
-        hitmask2,
-):
+def pixelCollision(rect1, rect2, hitmask1, hitmask2):
 
     rect = rect1.clip(rect2)
 
@@ -427,7 +425,6 @@ def pixelCollision(
         for y in xrange(rect.height):
             if hitmask1[x1 + x][y1 + y] and hitmask2[x2 + x][y2 + y]:
                 return True
-
     return False
 
 
